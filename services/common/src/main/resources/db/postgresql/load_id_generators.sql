@@ -985,8 +985,8 @@ conforming to a formal identification system.',
 '<org.collectionspace.services.id.SettableIDGenerator>
   <parts>
     <org.collectionspace.services.id.StringIDGeneratorPart>
-      <initialValue>MH</initialValue>
-      <currentValue>MH</currentValue>
+      <initialValue>MR</initialValue>
+      <currentValue>MR</currentValue>
     </org.collectionspace.services.id.StringIDGeneratorPart>
     <org.collectionspace.services.id.YearIDGeneratorPart>
       <currentValue></currentValue>
@@ -1294,6 +1294,42 @@ received on loan. Uses alternate prefix.',
   </parts>
 </org.collectionspace.services.id.SettableIDGenerator>'
   WHERE '6b6fdbee-fe3b-428a-9987-d4da96885bcc' NOT IN
+        (
+        SELECT  csid
+        FROM    id_generators
+        );
+
+-- OMCA VALUATION_CONTROL_REFERENCE_NUMBER
+
+INSERT INTO id_generators
+    (csid, displayname, description, priority, last_generated_id, id_generator_state)
+  SELECT
+     '962faf0e-4e72-4c36-8756-86956a4a3753',
+     'OMCA Valuation Control Reference Number',
+     'OMCA. Identifies the valuation control of an object record.',
+     '9',
+     '',
+'<org.collectionspace.services.id.SettableIDGenerator>
+  <parts>
+    <org.collectionspace.services.id.StringIDGeneratorPart>
+      <initialValue>V</initialValue>
+      <currentValue>V</currentValue>
+    </org.collectionspace.services.id.StringIDGeneratorPart>
+    <org.collectionspace.services.id.YearIDGeneratorPart>
+      <currentValue></currentValue>
+    </org.collectionspace.services.id.YearIDGeneratorPart>
+    <org.collectionspace.services.id.StringIDGeneratorPart>
+      <initialValue>.</initialValue>
+      <currentValue>.</currentValue>
+    </org.collectionspace.services.id.StringIDGeneratorPart>
+    <org.collectionspace.services.id.NumericIDGeneratorPart>
+      <maxLength>6</maxLength>
+      <initialValue>1</initialValue>
+      <currentValue>-1</currentValue>
+    </org.collectionspace.services.id.NumericIDGeneratorPart>
+  </parts>
+</org.collectionspace.services.id.SettableIDGenerator>'
+  WHERE '962faf0e-4e72-4c36-8756-86956a4a3753' NOT IN
         (
         SELECT  csid
         FROM    id_generators
