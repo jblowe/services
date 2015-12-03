@@ -858,6 +858,37 @@ without parts.',
         FROM    id_generators
         );
 
+-- OMCA EXHIBITION_NUMBER
+
+INSERT INTO id_generators
+    (csid, displayname, description, priority, last_generated_id, id_generator_state)
+  SELECT 
+     'c95150b5-ec47-4db9-bcae-f4a532b2624f',
+     'OMCA. Exhibition Number',
+     'OMCA. Identifies exhibition activities, in which one
+or more exhibition events occur at an institution.',
+     '9',
+     '',
+'<org.collectionspace.services.id.SettableIDGenerator>
+   <parts>
+    <org.collectionspace.services.id.StringIDGeneratorPart>
+      <initialValue>EX</initialValue>
+      <currentValue>EX</currentValue>
+    </org.collectionspace.services.id.StringIDGeneratorPart>
+    <org.collectionspace.services.id.NumericIDGeneratorPart>
+      <maxLength>6</maxLength>
+      <initialValue>81</initialValue>
+      <currentValue>-1</currentValue>
+    </org.collectionspace.services.id.NumericIDGeneratorPart>
+  </parts>
+</org.collectionspace.services.id.SettableIDGenerator>'
+  WHERE 'c95150b5-ec47-4db9-bcae-f4a532b2624f' NOT IN
+        (
+        SELECT  csid
+        FROM    id_generators
+        );
+
+
 -- OMCA LOANS_IN_NUMBER
 
 INSERT INTO id_generators
@@ -985,8 +1016,8 @@ conforming to a formal identification system.',
 '<org.collectionspace.services.id.SettableIDGenerator>
   <parts>
     <org.collectionspace.services.id.StringIDGeneratorPart>
-      <initialValue>MR</initialValue>
-      <currentValue>MR</currentValue>
+      <initialValue>MH</initialValue>
+      <currentValue>MH</currentValue>
     </org.collectionspace.services.id.StringIDGeneratorPart>
     <org.collectionspace.services.id.YearIDGeneratorPart>
       <currentValue></currentValue>
@@ -1270,26 +1301,10 @@ received on loan. Uses alternate prefix.',
       <initialValue>EX</initialValue>
       <currentValue>EX</currentValue>
     </org.collectionspace.services.id.StringIDGeneratorPart>
-    <org.collectionspace.services.id.YearIDGeneratorPart>
-      <currentValue></currentValue>
-    </org.collectionspace.services.id.YearIDGeneratorPart>
-    <org.collectionspace.services.id.StringIDGeneratorPart>
-      <initialValue>.</initialValue>
-      <currentValue>.</currentValue>
-    </org.collectionspace.services.id.StringIDGeneratorPart>
     <org.collectionspace.services.id.NumericIDGeneratorPart>
       <maxLength>6</maxLength>
-      <initialValue>1</initialValue>
-      <currentValue>-1</currentValue>
-    </org.collectionspace.services.id.NumericIDGeneratorPart>
-    <org.collectionspace.services.id.StringIDGeneratorPart>
-      <initialValue>.</initialValue>
-      <currentValue>.</currentValue>
-    </org.collectionspace.services.id.StringIDGeneratorPart>
-    <org.collectionspace.services.id.NumericIDGeneratorPart>
-      <maxLength>6</maxLength>
-      <initialValue>1</initialValue>
-      <currentValue>-1</currentValue>
+      <initialValue>0</initialValue>
+      <currentValue>0</currentValue>
     </org.collectionspace.services.id.NumericIDGeneratorPart>
   </parts>
 </org.collectionspace.services.id.SettableIDGenerator>'
