@@ -53,6 +53,9 @@ public class UpdateObjectLocationOnMove extends AbstractUpdateObjectLocationValu
                 logger.trace("currentLocation refName=" + currentLocationRefName);
             }
         }
+
+        // Get the display name of the current location value from the Movement
+        String currentLocationDisplayName = RefNameUtils.getDisplayName(currentLocationRefName);
         
         // Get the computed current location value of the CollectionObject
         // (the "existing" value)
@@ -73,6 +76,11 @@ public class UpdateObjectLocationOnMove extends AbstractUpdateObjectLocationValu
             // new value (from the Movement).
             collectionObjectDocModel.setProperty(COLLECTIONOBJECTS_COMMON_SCHEMA,
                     COMPUTED_CURRENT_LOCATION_PROPERTY, currentLocationRefName);
+
+            // Update the existing value with the new value
+            // TODO: make sure this is only executed when COLLECTIONOBJECTS_OMCA_SCHEMA is valid
+            collectionObjectDocModel.setProperty(COLLECTIONOBJECTS_OMCA_SCHEMA,
+                    COMPUTED_CURRENT_LOCATION_DISPLAY_PROPERTY, currentLocationDisplayName);
 
         } else {
             if (logger.isTraceEnabled()) {

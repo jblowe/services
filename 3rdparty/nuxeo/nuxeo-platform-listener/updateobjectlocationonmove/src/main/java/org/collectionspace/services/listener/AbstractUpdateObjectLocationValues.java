@@ -39,8 +39,10 @@ public abstract class AbstractUpdateObjectLocationValues implements EventListene
     private final static String SUBJECT_DOCTYPE_PROPERTY = "subjectDocumentType"; // FIXME: Get from external constant
     private final static String OBJECT_DOCTYPE_PROPERTY = "objectDocumentType"; // FIXME: Get from external constant
     protected final static String COLLECTIONOBJECTS_COMMON_SCHEMA = "collectionobjects_common"; // FIXME: Get from external constant
+    protected final static String COLLECTIONOBJECTS_OMCA_SCHEMA = "collectionobjects_omca"; // FIXME: Get from external constant
     private final static String COLLECTIONOBJECT_DOCTYPE = "CollectionObject"; // FIXME: Get from external constant
     protected final static String COMPUTED_CURRENT_LOCATION_PROPERTY = "computedCurrentLocation"; // FIXME: Create and then get from external constant
+    protected final static String COMPUTED_CURRENT_LOCATION_DISPLAY_PROPERTY = "computedCurrentLocationDisplay"; // FIXME: Create and then get from external constant
     protected final static String MOVEMENTS_COMMON_SCHEMA = "movements_common"; // FIXME: Get from external constant
     private final static String MOVEMENT_DOCTYPE = MovementConstants.NUXEO_DOCTYPE;
     private final static String LOCATION_DATE_PROPERTY = "locationDate"; // FIXME: Get from external constant
