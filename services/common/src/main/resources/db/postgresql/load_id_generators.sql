@@ -691,6 +691,54 @@ from the museum''s collections.',
         FROM    id_generators
         );
 
+-- RESTRICTEDMEDIA_RESOURCE_IDENTIFICATION_NUMBER
+
+INSERT INTO id_generators
+    (csid, displayname, description, priority, last_generated_id, id_generator_state)
+  SELECT
+     'd49b096b-7b01-4f53-9c49-b437a7e5418e',
+     'Restrictedmedia Resource Identification Number',
+     'Unambiguously identifies a restrictedmedia resource within a given context.
+Recommended best practice is to identify the resource by means of a string
+conforming to a formal identification system.',
+     '9',
+     '',
+'<org.collectionspace.services.id.SettableIDGenerator>
+  <parts>
+    <org.collectionspace.services.id.StringIDGeneratorPart>
+      <initialValue>MHR</initialValue>
+      <currentValue>MHR</currentValue>
+    </org.collectionspace.services.id.StringIDGeneratorPart>
+    <org.collectionspace.services.id.YearIDGeneratorPart>
+      <currentValue></currentValue>
+    </org.collectionspace.services.id.YearIDGeneratorPart>
+    <org.collectionspace.services.id.StringIDGeneratorPart>
+      <initialValue>.</initialValue>
+      <currentValue>.</currentValue>
+    </org.collectionspace.services.id.StringIDGeneratorPart>
+    <org.collectionspace.services.id.NumericIDGeneratorPart>
+      <maxLength>6</maxLength>
+      <initialValue>1</initialValue>
+      <currentValue>-1</currentValue>
+    </org.collectionspace.services.id.NumericIDGeneratorPart>
+    <org.collectionspace.services.id.StringIDGeneratorPart>
+      <initialValue>.</initialValue>
+      <currentValue>.</currentValue>
+    </org.collectionspace.services.id.StringIDGeneratorPart>
+    <org.collectionspace.services.id.NumericIDGeneratorPart>
+      <maxLength>6</maxLength>
+      <initialValue>1</initialValue>
+      <currentValue>-1</currentValue>
+    </org.collectionspace.services.id.NumericIDGeneratorPart>
+  </parts>
+</org.collectionspace.services.id.SettableIDGenerator>'
+  WHERE 'd49b096b-7b01-4f53-9c49-b437a7e5418e' NOT IN
+        (
+        SELECT  csid
+        FROM    id_generators
+        );
+
+
 -- STUDY_NUMBER
 
 INSERT INTO id_generators
