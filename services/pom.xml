@@ -85,6 +85,7 @@
         <module>PerformanceTests</module>
         <module>security</module>
         <module>JaxRsServiceProvider</module>
+        <module>structureddate</module>
     </modules>
 
     <dependencies>
