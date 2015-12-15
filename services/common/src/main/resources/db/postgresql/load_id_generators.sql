@@ -951,6 +951,42 @@ without parts.',
         FROM    id_generators
         );
 
+-- OMCA_CLAIM_NUMBER
+
+INSERT INTO id_generators
+    (csid, displayname, description, priority, last_generated_id, id_generator_state)
+  SELECT 
+     'a2d23669-8fbd-4efd-88c0-4590dc17f40f',
+     'Claim Number',
+     'Identifies a Claim.',
+     '9',
+     '',
+'<org.collectionspace.services.id.SettableIDGenerator>
+  <parts>
+    <org.collectionspace.services.id.StringIDGeneratorPart>
+      <initialValue>NGP</initialValue>
+      <currentValue>NGP</currentValue>
+    </org.collectionspace.services.id.StringIDGeneratorPart>
+    <org.collectionspace.services.id.YearIDGeneratorPart>
+      <currentValue></currentValue>
+    </org.collectionspace.services.id.YearIDGeneratorPart>
+    <org.collectionspace.services.id.StringIDGeneratorPart>
+      <initialValue>.</initialValue>
+      <currentValue>.</currentValue>
+    </org.collectionspace.services.id.StringIDGeneratorPart>
+    <org.collectionspace.services.id.NumericIDGeneratorPart>
+      <maxLength>6</maxLength>
+      <initialValue>1</initialValue>
+      <currentValue>-1</currentValue>
+    </org.collectionspace.services.id.NumericIDGeneratorPart>
+  </parts>
+</org.collectionspace.services.id.SettableIDGenerator>'
+  WHERE 'a2d23669-8fbd-4efd-88c0-4590dc17f40f' NOT IN
+        (
+        SELECT  csid
+        FROM    id_generators
+        );
+
 -- OMCA EXHIBITION_NUMBER
 
 INSERT INTO id_generators
