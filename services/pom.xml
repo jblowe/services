@@ -80,6 +80,7 @@
         <module>workflow</module>
         <module>media</module>
         <module>restrictedmedia</module>
+        <module>claim</module>
         <module>publicitem</module>        
         <!--module>sdk</module-->
         <module>IntegrationTests</module>
