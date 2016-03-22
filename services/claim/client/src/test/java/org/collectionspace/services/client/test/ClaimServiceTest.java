@@ -91,8 +91,8 @@ public class ClaimServiceTest extends AbstractPoxServiceTestImpl<AbstractCommonL
      * @see org.collectionspace.services.client.test.BaseServiceTest#getAbstractCommonList(org.jboss.resteasy.client.ClientResponse)
      */
     @Override
-    protected AbstractCommonList getCommonList(ClientResponse<AbstractCommonList> response) {
-        return response.getEntity(AbstractCommonList.class);
+    protected AbstractCommonList getCommonList(Response response) {
+        return response.readEntity(AbstractCommonList.class);
     }
     
     // ---------------------------------------------------------------
@@ -115,7 +115,7 @@ public class ClaimServiceTest extends AbstractPoxServiceTestImpl<AbstractCommonL
         String identifier = createIdentifier();
         PoxPayloadOut multipart = createClaimInstance(identifier);
         String newID = null;
-        ClientResponse<Response> res = client.create(multipart);
+        Response res = client.create(multipart);
         try {
             int statusCode = res.getStatus();
 
@@ -135,7 +135,7 @@ public class ClaimServiceTest extends AbstractPoxServiceTestImpl<AbstractCommonL
             newID = extractId(res);
         } finally {
             if (res != null) {
-                res.releaseConnection();
+                res.close();
             }
         }
         
@@ -297,14 +297,14 @@ public class ClaimServiceTest extends AbstractPoxServiceTestImpl<AbstractCommonL
 
         // Submit the request to the service and store the response.
         ClaimClient client = new ClaimClient();
-        ClientResponse<String> res = client.read(knownResourceId);
+        Response res = client.read(knownResourceId);
         PoxPayloadIn input = null;
         try {
             assertStatusCode(res, testName);
-            input = new PoxPayloadIn(res.getEntity(String.class));
+            input = new PoxPayloadIn(res.readEntity(String.class));
         } finally {
             if (res != null) {
-                res.releaseConnection();
+                res.close();
             }
         }
         
@@ -353,7 +353,7 @@ public class ClaimServiceTest extends AbstractPoxServiceTestImpl<AbstractCommonL
 
         // Submit the request to the service and store the response.
         ClaimClient client = new ClaimClient();
-        ClientResponse<String> res = client.read(NON_EXISTENT_ID);
+        Response res = client.read(NON_EXISTENT_ID);
         try {
             int statusCode = res.getStatus();
 
@@ -367,7 +367,7 @@ public class ClaimServiceTest extends AbstractPoxServiceTestImpl<AbstractCommonL
             Assert.assertEquals(statusCode, testExpectedStatusCode);
         } finally {
             if (res != null) {
-                res.releaseConnection();
+                res.close();
             }
         }
     }
@@ -389,7 +389,7 @@ public class ClaimServiceTest extends AbstractPoxServiceTestImpl<AbstractCommonL
         // Submit the request to the service and store the response.
         AbstractCommonList list = null;
         ClaimClient client = new ClaimClient();
-        ClientResponse<AbstractCommonList> res = client.readList();
+        Response res = client.readList();
 
         try {
             int statusCode = res.getStatus();
@@ -403,10 +403,10 @@ public class ClaimServiceTest extends AbstractPoxServiceTestImpl<AbstractCommonL
                     invalidStatusCodeMessage(testRequestType, statusCode));
             Assert.assertEquals(statusCode, testExpectedStatusCode);
             assertStatusCode(res, testName);
-            list = res.getEntity();
+            list = res.readEntity(getCommonListType());
         } finally {
             if (res != null) {
-                res.releaseConnection();
+                res.close();
             }
         }
 
@@ -435,17 +435,17 @@ public class ClaimServiceTest extends AbstractPoxServiceTestImpl<AbstractCommonL
 
         // Retrieve the contents of a resource to update.
         ClaimClient client = new ClaimClient();
-        ClientResponse<String> res = client.read(knownResourceId);
+        Response res = client.read(knownResourceId);
         PoxPayloadIn input = null;
         try {
             assertStatusCode(res, testName);
-            input = new PoxPayloadIn(res.getEntity());
+            input = new PoxPayloadIn(res.readEntity(String.class));
             if (logger.isDebugEnabled()) {
                 logger.debug("got object to update with ID: " + knownResourceId);
             }
         } finally {
             if (res != null) {
-                res.releaseConnection();
+                res.close();
             }
         }
         
@@ -491,10 +491,10 @@ public class ClaimServiceTest extends AbstractPoxServiceTestImpl<AbstractCommonL
             Assert.assertTrue(testRequestType.isValidStatusCode(statusCode),
                     invalidStatusCodeMessage(testRequestType, statusCode));
             Assert.assertEquals(statusCode, testExpectedStatusCode);
-            input = new PoxPayloadIn(res.getEntity());
+            input = new PoxPayloadIn(res.readEntity(String.class));
         } finally {
             if (res != null) {
-                res.releaseConnection();
+                res.close();
             }
         }
 
@@ -677,7 +677,7 @@ public class ClaimServiceTest extends AbstractPoxServiceTestImpl<AbstractCommonL
         // The only relevant ID may be the one used in update(), below.
         ClaimClient client = new ClaimClient();
         PoxPayloadOut multipart = createClaimInstance(NON_EXISTENT_ID);
-        ClientResponse<String> res = client.update(NON_EXISTENT_ID, multipart);
+        Response res = client.update(NON_EXISTENT_ID, multipart);
         try {
             int statusCode = res.getStatus();
 
@@ -691,7 +691,7 @@ public class ClaimServiceTest extends AbstractPoxServiceTestImpl<AbstractCommonL
             Assert.assertEquals(statusCode, testExpectedStatusCode);
         } finally {
             if (res != null) {
-                res.releaseConnection();
+                res.close();
             }
         }
     }
@@ -713,7 +713,7 @@ public class ClaimServiceTest extends AbstractPoxServiceTestImpl<AbstractCommonL
 
         // Submit the request to the service and store the response.
         ClaimClient client = new ClaimClient();
-        ClientResponse<Response> res = client.delete(knownResourceId);
+        Response res = client.delete(knownResourceId);
         try {
             int statusCode = res.getStatus();
 
@@ -727,7 +727,7 @@ public class ClaimServiceTest extends AbstractPoxServiceTestImpl<AbstractCommonL
             Assert.assertEquals(statusCode, testExpectedStatusCode);
         } finally {
             if (res != null) {
-                res.releaseConnection();
+                res.close();
             }
         }
     }
@@ -745,7 +745,7 @@ public class ClaimServiceTest extends AbstractPoxServiceTestImpl<AbstractCommonL
 
         // Submit the request to the service and store the response.
         ClaimClient client = new ClaimClient();
-        ClientResponse<Response> res = client.delete(NON_EXISTENT_ID);
+        Response res = client.delete(NON_EXISTENT_ID);
         try {
             int statusCode = res.getStatus();
 
@@ -759,7 +759,7 @@ public class ClaimServiceTest extends AbstractPoxServiceTestImpl<AbstractCommonL
             Assert.assertEquals(statusCode, testExpectedStatusCode);
         } finally {
             if (res != null) {
-                res.releaseConnection();
+                res.close();
             }
         }
     }

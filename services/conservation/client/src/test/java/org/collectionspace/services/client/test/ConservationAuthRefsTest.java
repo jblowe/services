@@ -74,7 +74,7 @@ public class ConservationAuthRefsTest extends BaseServiceTest<AbstractCommonList
     // Instance variables specific to this test.
     final String SERVICE_NAME = "conservation";
     final String SERVICE_PATH_COMPONENT = "conservation";
-    final String PERSON_AUTHORITY_NAME = "TestPersonAuth";
+    final String PERSON_AUTHORITY_NAME = "TestPersonAuthForConservation";
     private String knownResourceId = null;
     private List<String> conservationIdsCreated = new ArrayList<String>();
     private List<String> personIdsCreated = new ArrayList<String>();
@@ -92,16 +92,15 @@ public class ConservationAuthRefsTest extends BaseServiceTest<AbstractCommonList
      */
     @Override
     protected CollectionSpaceClient getClientInstance() {
-    	throw new UnsupportedOperationException(); //method not supported (or needed) in this test class
+        throw new UnsupportedOperationException(); //method not supported (or needed) in this test class
     }
     
     /* (non-Javadoc)
      * @see org.collectionspace.services.client.test.BaseServiceTest#getAbstractCommonList(org.jboss.resteasy.client.ClientResponse)
      */
     @Override
-	protected AbstractCommonList getCommonList(
-			ClientResponse<AbstractCommonList> response) {
-    	throw new UnsupportedOperationException(); //method not supported (or needed) in this test class
+    protected AbstractCommonList getCommonList(Response response) {
+        throw new UnsupportedOperationException(); //method not supported (or needed) in this test class
     }
 
     // ---------------------------------------------------------------
@@ -131,7 +130,7 @@ public class ConservationAuthRefsTest extends BaseServiceTest<AbstractCommonList
                 approvedByRefName,
                 researcherRefName,
                 sampleByRefName);
-        ClientResponse<Response> response = conservationClient.create(multipart);
+        Response response = conservationClient.create(multipart);
         int statusCode = response.getStatus();
         try {
             // Check the status code of the response: does it match
@@ -160,34 +159,35 @@ public class ConservationAuthRefsTest extends BaseServiceTest<AbstractCommonList
             // so they can be deleted after tests have been run.
             conservationIdsCreated.add(extractId(response));
         } finally {
-        	response.releaseConnection();
+            response.close();
         }
     }
     
     protected void createPersonRefs(){
-
         PersonAuthorityClient personAuthClient = new PersonAuthorityClient();
         // Create a temporary PersonAuthority resource, and its corresponding
         // refName by which it can be identified.
-    	PoxPayloadOut multipart = PersonAuthorityClientUtils.createPersonAuthorityInstance(
-    	    PERSON_AUTHORITY_NAME, PERSON_AUTHORITY_NAME, personAuthClient.getCommonPartName());
-        ClientResponse<Response> res = personAuthClient.create(multipart);
-        int statusCode = res.getStatus();
-
-        Assert.assertTrue(testRequestType.isValidStatusCode(statusCode),
-            invalidStatusCodeMessage(testRequestType, statusCode));
-        Assert.assertEquals(statusCode, STATUS_CREATED);
-        personAuthCSID = extractId(res);
+        PoxPayloadOut multipart = PersonAuthorityClientUtils.createPersonAuthorityInstance(
+            PERSON_AUTHORITY_NAME, PERSON_AUTHORITY_NAME, personAuthClient.getCommonPartName());
+        Response res = personAuthClient.create(multipart);
+        try {
+               int statusCode = res.getStatus();
+               Assert.assertTrue(testRequestType.isValidStatusCode(statusCode),
+                   invalidStatusCodeMessage(testRequestType, statusCode));
+               Assert.assertEquals(statusCode, STATUS_CREATED);
+               personAuthCSID = extractId(res);
+        } finally {
+               res.close();
+        }
 
         String authRefName = PersonAuthorityClientUtils.getAuthorityRefName(personAuthCSID, null);
-
         // Create temporary Person resources, and their corresponding refNames
         // by which they can be identified.
-       	String csid = createPerson("Connie", "Conservator", "connieConservator", authRefName);
+        String csid = createPerson("Connie", "Conservator", "connieConservator", authRefName);
         personIdsCreated.add(csid);
         conservatorRefName = PersonAuthorityClientUtils.getPersonRefName(personAuthCSID, csid, null);
 
-       	csid = createPerson("Oliver", "Otherparty", "oliverOtherparty", authRefName);
+        csid = createPerson("Oliver", "Otherparty", "oliverOtherparty", authRefName);
         personIdsCreated.add(csid);
         otherPartyRefName = PersonAuthorityClientUtils.getPersonRefName(personAuthCSID, csid, null);
 
@@ -209,6 +209,8 @@ public class ConservationAuthRefsTest extends BaseServiceTest<AbstractCommonList
     }
     
     protected String createPerson(String firstName, String surName, String shortId, String authRefName ) {
+        String result = null;
+       
         PersonAuthorityClient personAuthClient = new PersonAuthorityClient();
         Map<String, String> personInfo = new HashMap<String,String>();
         personInfo.put(PersonJAXBSchema.FORE_NAME, firstName);
@@ -220,16 +222,21 @@ public class ConservationAuthRefsTest extends BaseServiceTest<AbstractCommonList
         term.setTermDisplayName(termName);
         term.setTermName(termName);
         personTerms.add(term);
-    	PoxPayloadOut multipart =
-    		PersonAuthorityClientUtils.createPersonInstance(personAuthCSID, 
-    				authRefName, personInfo, personTerms, personAuthClient.getItemCommonPartName());
-        ClientResponse<Response> res = personAuthClient.createItem(personAuthCSID, multipart);
-        int statusCode = res.getStatus();
-
-        Assert.assertTrue(testRequestType.isValidStatusCode(statusCode),
+        PoxPayloadOut multipart = PersonAuthorityClientUtils.createPersonInstance(personAuthCSID, 
+                    authRefName, personInfo, personTerms, personAuthClient.getItemCommonPartName());
+      
+        Response res = personAuthClient.createItem(personAuthCSID, multipart);
+        try {
+            int statusCode = res.getStatus();
+            Assert.assertTrue(testRequestType.isValidStatusCode(statusCode),
                 invalidStatusCodeMessage(testRequestType, statusCode));
-        Assert.assertEquals(statusCode, STATUS_CREATED);
-    	return extractId(res);
+            Assert.assertEquals(statusCode, STATUS_CREATED);
+            result = extractId(res);
+        } finally {
+            res.close();
+        }
+
+        return result;
     }
 
     // Success outcomes
@@ -241,21 +248,21 @@ public class ConservationAuthRefsTest extends BaseServiceTest<AbstractCommonList
 
         // Submit the request to the service and store the response.
         ConservationClient conservationClient = new ConservationClient();
-        ClientResponse<String> res = conservationClient.read(knownResourceId);
+        Response res = conservationClient.read(knownResourceId);
         ConservationCommon conservationCommon = null;
         try {
-	        assertStatusCode(res, testName);
-	        // Extract the common part from the response.
-	        PoxPayloadIn input = new PoxPayloadIn(res.getEntity());
-	        conservationCommon = (ConservationCommon) extractPart(input,
-	            conservationClient.getCommonPartName(), ConservationCommon.class);
-	        Assert.assertNotNull(conservationCommon);
-	        if(logger.isDebugEnabled()){
-	            logger.debug(objectAsXmlString(conservationCommon, ConservationCommon.class));
-	        }
+            assertStatusCode(res, testName);
+            // Extract the common part from the response.
+            PoxPayloadIn input = new PoxPayloadIn(res.readEntity(String.class));
+            conservationCommon = (ConservationCommon) extractPart(input,
+                conservationClient.getCommonPartName(), ConservationCommon.class);
+            Assert.assertNotNull(conservationCommon);
+            if(logger.isDebugEnabled()){
+                logger.debug(objectAsXmlString(conservationCommon, ConservationCommon.class));
+            }
         } finally {
-        	if (res != null) {
-                res.releaseConnection();
+            if (res != null) {
+                res.close();
             }
         }
         //
@@ -265,15 +272,15 @@ public class ConservationAuthRefsTest extends BaseServiceTest<AbstractCommonList
         Assert.assertEquals(conservationCommon.getResearcher(), researcherRefName);
         
         // Get the auth refs and check them
-        ClientResponse<AuthorityRefList> res2 = conservationClient.getAuthorityRefs(knownResourceId);
+        Response res2 = conservationClient.getAuthorityRefs(knownResourceId);
         AuthorityRefList list = null;
         try {
-	        assertStatusCode(res2, testName);
-	        list = res2.getEntity();
-	        Assert.assertNotNull(list);
+            assertStatusCode(res2, testName);
+            list = res2.readEntity(AuthorityRefList.class);
+            Assert.assertNotNull(list);
         } finally {
-        	if (res2 != null) {
-        		res2.releaseConnection();
+            if (res2 != null) {
+                res2.close();
             }
         }
         
@@ -290,7 +297,7 @@ public class ConservationAuthRefsTest extends BaseServiceTest<AbstractCommonList
             int i = 0;
             for(AuthorityRefList.AuthorityRefItem item : items){
                 logger.debug(testName + ": list-item[" + i + "] Field:" +
-                		item.getSourceField() + "= " +
+                        item.getSourceField() + "= " +
                         item.getAuthDisplayName() +
                         item.getItemDisplayName());
                 logger.debug(testName + ": list-item[" + i + "] refName=" +
@@ -323,12 +330,12 @@ public class ConservationAuthRefsTest extends BaseServiceTest<AbstractCommonList
     @AfterClass(alwaysRun=true)
     public void cleanUp() {
         String noTest = System.getProperty("noTestCleanup");
-    	if(Boolean.TRUE.toString().equalsIgnoreCase(noTest)) {
+        if(Boolean.TRUE.toString().equalsIgnoreCase(noTest)) {
             if (logger.isDebugEnabled()) {
                 logger.debug("Skipping Cleanup phase ...");
             }
             return;
-    	}
+        }
         if (logger.isDebugEnabled()) {
             logger.debug("Cleaning up temporary resources created for testing ...");
         }
@@ -337,23 +344,19 @@ public class ConservationAuthRefsTest extends BaseServiceTest<AbstractCommonList
         
         for (String resourceId : personIdsCreated) {
             // Note: Any non-success responses are ignored and not reported.
-        	ClientResponse<Response> response = 
-        		personAuthClient.deleteItem(personAuthCSID, resourceId); // alternative to personAuthClient.deleteItem().releaseConnection();
-        	response.releaseConnection();
+            personAuthClient.deleteItem(personAuthCSID, resourceId).close();
         }
         
         // Delete PersonAuthority resource(s).
         // Note: Any non-success response is ignored and not reported.
         if (personAuthCSID != null) {
-        	personAuthClient.delete(personAuthCSID);
-	        // Delete Conservation resource(s).
-        	ConservationClient conservationClient = new ConservationClient();
-        	ClientResponse<Response> response = null;
-	        for (String resourceId : conservationIdsCreated) {
-	            // Note: Any non-success responses are ignored and not reported.
-	            response = conservationClient.delete(resourceId); // alternative to conservationClient.delete(resourceId).releaseConnection();
-	            response.releaseConnection();
-	        }
+            personAuthClient.delete(personAuthCSID);
+            // Delete Conservation resource(s).
+            ConservationClient conservationClient = new ConservationClient();
+            for (String resourceId : conservationIdsCreated) {
+                // Note: Any non-success responses are ignored and not reported.
+                conservationClient.delete(resourceId).close(); 
+            }
         }
     }
 

@@ -78,9 +78,8 @@ public class ConservationServiceTest extends AbstractPoxServiceTestImpl<Abstract
      * @see org.collectionspace.services.client.test.BaseServiceTest#getAbstractCommonList(org.jboss.resteasy.client.ClientResponse)
      */
     @Override
-    protected AbstractCommonList getCommonList(
-            ClientResponse<AbstractCommonList> response) {
-        return response.getEntity(AbstractCommonList.class);
+    protected AbstractCommonList getCommonList(Response response) {
+        return response.readEntity(AbstractCommonList.class);
     }
 
     // ---------------------------------------------------------------
@@ -105,7 +104,7 @@ public class ConservationServiceTest extends AbstractPoxServiceTestImpl<Abstract
         String identifier = createIdentifier();
         PoxPayloadOut multipart = createConservationInstance(identifier);
         String newID = null;
-        ClientResponse<Response> res = client.create(multipart);
+        Response res = client.create(multipart);
         try {
             int statusCode = res.getStatus();
 
@@ -124,8 +123,8 @@ public class ConservationServiceTest extends AbstractPoxServiceTestImpl<Abstract
 
             newID = extractId(res);
         } finally {
-        	if (res != null) {
-                res.releaseConnection();
+            if (res != null) {
+                res.close();
             }
         }
 
@@ -263,14 +262,14 @@ public class ConservationServiceTest extends AbstractPoxServiceTestImpl<Abstract
 
         // Submit the request to the service and store the response.
         ConservationClient client = new ConservationClient();
-        ClientResponse<String> res = client.read(knownResourceId);
+        Response res = client.read(knownResourceId);
         PoxPayloadIn input = null;
         try {
             assertStatusCode(res, testName);
-            input = new PoxPayloadIn(res.getEntity());
+            input = new PoxPayloadIn(res.readEntity(String.class));
         } finally {
-        	if (res != null) {
-                res.releaseConnection();
+            if (res != null) {
+                res.close();
             }
         }
 
@@ -320,7 +319,7 @@ public class ConservationServiceTest extends AbstractPoxServiceTestImpl<Abstract
 
         // Submit the request to the service and store the response.
         ConservationClient client = new ConservationClient();
-        ClientResponse<String> res = client.read(NON_EXISTENT_ID);
+        Response res = client.read(NON_EXISTENT_ID);
         try {
             int statusCode = res.getStatus();
 
@@ -333,8 +332,8 @@ public class ConservationServiceTest extends AbstractPoxServiceTestImpl<Abstract
                     invalidStatusCodeMessage(testRequestType, statusCode));
             Assert.assertEquals(statusCode, testExpectedStatusCode);
         } finally {
-        	if (res != null) {
-                res.releaseConnection();
+            if (res != null) {
+                res.close();
             }
         }
     }
@@ -358,7 +357,7 @@ public class ConservationServiceTest extends AbstractPoxServiceTestImpl<Abstract
         // Submit the request to the service and store the response.
         AbstractCommonList list = null;
         ConservationClient client = new ConservationClient();
-        ClientResponse<AbstractCommonList> res = client.readList();
+        Response res = client.readList();
         assertStatusCode(res, testName);
         try {
             int statusCode = res.getStatus();
@@ -372,17 +371,17 @@ public class ConservationServiceTest extends AbstractPoxServiceTestImpl<Abstract
                     invalidStatusCodeMessage(testRequestType, statusCode));
             Assert.assertEquals(statusCode, testExpectedStatusCode);
 
-            list = res.getEntity();
+            list = res.readEntity(getCommonListType());
         } finally {
-        	if (res != null) {
-                res.releaseConnection();
+            if (res != null) {
+                res.close();
             }
         }
 
         // Optionally output additional data about list members for debugging.
         boolean iterateThroughList = true;
         if(iterateThroughList && logger.isDebugEnabled()){
-        	AbstractCommonListUtils.ListItemsInAbstractCommonList(list, logger, testName);
+            AbstractCommonListUtils.ListItemsInAbstractCommonList(list, logger, testName);
         }
 
     }
@@ -408,17 +407,17 @@ public class ConservationServiceTest extends AbstractPoxServiceTestImpl<Abstract
 
         // Retrieve the contents of a resource to update.
         ConservationClient client = new ConservationClient();
-        ClientResponse<String> res = client.read(knownResourceId);
+        Response res = client.read(knownResourceId);
         PoxPayloadIn input = null;
         try {
-        	assertStatusCode(res, testName);
-            input = new PoxPayloadIn(res.getEntity());
-        	if (logger.isDebugEnabled()) {
+            assertStatusCode(res, testName);
+            input = new PoxPayloadIn(res.readEntity(String.class));
+            if (logger.isDebugEnabled()) {
                 logger.debug("got object to update with ID: " + knownResourceId);
             }
         } finally {
-        	if (res != null) {
-                res.releaseConnection();
+            if (res != null) {
+                res.close();
             }
         }
 
@@ -446,7 +445,7 @@ public class ConservationServiceTest extends AbstractPoxServiceTestImpl<Abstract
         PayloadOutputPart commonPart = output.addPart(client.getCommonPartName(), conservationCommon);
         res = client.update(knownResourceId, output);
         try {
-        	assertStatusCode(res, testName);
+            assertStatusCode(res, testName);
             int statusCode = res.getStatus();
             // Check the status code of the response: does it match the expected response(s)?
             if (logger.isDebugEnabled()) {
@@ -455,10 +454,10 @@ public class ConservationServiceTest extends AbstractPoxServiceTestImpl<Abstract
             Assert.assertTrue(testRequestType.isValidStatusCode(statusCode),
                     invalidStatusCodeMessage(testRequestType, statusCode));
             Assert.assertEquals(statusCode, testExpectedStatusCode);
-            input = new PoxPayloadIn(res.getEntity());
+            input = new PoxPayloadIn(res.readEntity(String.class));
         } finally {
-        	if (res != null) {
-                res.releaseConnection();
+            if (res != null) {
+                res.close();
             }
         }
 
@@ -499,7 +498,7 @@ public class ConservationServiceTest extends AbstractPoxServiceTestImpl<Abstract
         // The only relevant ID may be the one used in update(), below.
         ConservationClient client = new ConservationClient();
         PoxPayloadOut multipart = createConservationInstance(NON_EXISTENT_ID);
-        ClientResponse<String> res = client.update(NON_EXISTENT_ID, multipart);
+        Response res = client.update(NON_EXISTENT_ID, multipart);
         try {
             int statusCode = res.getStatus();
 
@@ -512,8 +511,8 @@ public class ConservationServiceTest extends AbstractPoxServiceTestImpl<Abstract
                     invalidStatusCodeMessage(testRequestType, statusCode));
             Assert.assertEquals(statusCode, testExpectedStatusCode);
         } finally {
-        	if (res != null) {
-                res.releaseConnection();
+            if (res != null) {
+                res.close();
             }
         }
     }
@@ -536,7 +535,7 @@ public class ConservationServiceTest extends AbstractPoxServiceTestImpl<Abstract
 
         // Submit the request to the service and store the response.
         ConservationClient client = new ConservationClient();
-        ClientResponse<Response> res = client.delete(knownResourceId);
+        Response res = client.delete(knownResourceId);
         try {
             int statusCode = res.getStatus();
 
@@ -549,8 +548,8 @@ public class ConservationServiceTest extends AbstractPoxServiceTestImpl<Abstract
                     invalidStatusCodeMessage(testRequestType, statusCode));
             Assert.assertEquals(statusCode, testExpectedStatusCode);
         } finally {
-        	if (res != null) {
-                res.releaseConnection();
+            if (res != null) {
+                res.close();
             }
         }
     }
@@ -569,7 +568,7 @@ public class ConservationServiceTest extends AbstractPoxServiceTestImpl<Abstract
 
         // Submit the request to the service and store the response.
         ConservationClient client = new ConservationClient();
-        ClientResponse<Response> res = client.delete(NON_EXISTENT_ID);
+        Response res = client.delete(NON_EXISTENT_ID);
         try {
             int statusCode = res.getStatus();
 
@@ -582,8 +581,8 @@ public class ConservationServiceTest extends AbstractPoxServiceTestImpl<Abstract
                     invalidStatusCodeMessage(testRequestType, statusCode));
             Assert.assertEquals(statusCode, testExpectedStatusCode);
         } finally {
-        	if (res != null) {
-                res.releaseConnection();
+            if (res != null) {
+                res.close();
             }
         }
     }
@@ -674,29 +673,29 @@ public class ConservationServiceTest extends AbstractPoxServiceTestImpl<Abstract
         return multipart;
     }
 
-	@Override
-	public void CRUDTests(String testName) {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void CRUDTests(String testName) {
+        // TODO Auto-generated method stub
+        
+    }
 
-	@Override
-	protected PoxPayloadOut createInstance(String commonPartName,
-			String identifier) {
+    @Override
+    protected PoxPayloadOut createInstance(String commonPartName,
+            String identifier) {
         PoxPayloadOut result = createConservationInstance(identifier);
         return result;
-	}
+    }
 
-	@Override
-	protected ConservationCommon updateInstance(ConservationCommon commonPartObject) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    protected ConservationCommon updateInstance(ConservationCommon commonPartObject) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	@Override
-	protected void compareUpdatedInstances(ConservationCommon original,
-			ConservationCommon updated) throws Exception {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    protected void compareUpdatedInstances(ConservationCommon original,
+            ConservationCommon updated) throws Exception {
+        // TODO Auto-generated method stub
+        
+    }
 }

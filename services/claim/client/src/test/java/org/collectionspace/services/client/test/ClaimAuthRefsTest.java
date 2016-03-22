@@ -90,7 +90,7 @@ public class ClaimAuthRefsTest extends BaseServiceTest<AbstractCommonList> {
      * @see org.collectionspace.services.client.test.BaseServiceTest#getAbstractCommonList(org.jboss.resteasy.client.ClientResponse)
      */
     @Override
-	protected AbstractCommonList getCommonList(ClientResponse<AbstractCommonList> response) {
+	protected AbstractCommonList getCommonList(Response response) {
     	throw new UnsupportedOperationException(); //method not supported (or needed) in this test class
     }
 
@@ -117,7 +117,7 @@ public class ClaimAuthRefsTest extends BaseServiceTest<AbstractCommonList> {
                 "claimNumber-" + identifier,
                 claimFilerRefName,
                 claimOnBehalfOfRefName);
-        ClientResponse<Response> res = claimClient.create(multipart);
+        Response res = claimClient.create(multipart);
         int statusCode = res.getStatus();
         try {
             // Check the status code of the response: does it match
@@ -146,7 +146,7 @@ public class ClaimAuthRefsTest extends BaseServiceTest<AbstractCommonList> {
             // so they can be deleted after tests have been run.
             claimIdsCreated.add(extractId(res));
         } finally {
-            res.releaseConnection();
+            res.close();
         }
     }
 
@@ -156,7 +156,7 @@ public class ClaimAuthRefsTest extends BaseServiceTest<AbstractCommonList> {
         // refName by which it can be identified.
     	PoxPayloadOut multipart = PersonAuthorityClientUtils.createPersonAuthorityInstance(
     	    PERSON_AUTHORITY_NAME, PERSON_AUTHORITY_NAME, personAuthClient.getCommonPartName());
-        ClientResponse<Response> res = personAuthClient.create(multipart);
+        Response res = personAuthClient.create(multipart);
         try {
             int statusCode = res.getStatus();
             Assert.assertTrue(testRequestType.isValidStatusCode(statusCode),
@@ -164,7 +164,7 @@ public class ClaimAuthRefsTest extends BaseServiceTest<AbstractCommonList> {
             Assert.assertEquals(statusCode, STATUS_CREATED);
             personAuthCSID = extractId(res);
         } finally {
-            res.releaseConnection();
+            res.close();
         }
         String authRefName = PersonAuthorityClientUtils.getAuthorityRefName(personAuthCSID, null);
         
@@ -195,7 +195,7 @@ public class ClaimAuthRefsTest extends BaseServiceTest<AbstractCommonList> {
         personTerms.add(term);
     	PoxPayloadOut multipart = PersonAuthorityClientUtils.createPersonInstance(personAuthCSID, 
     				authRefName, personInfo, personTerms, personAuthClient.getItemCommonPartName());
-        ClientResponse<Response> res = personAuthClient.createItem(personAuthCSID, multipart);
+        Response res = personAuthClient.createItem(personAuthCSID, multipart);
         try {
             int statusCode = res.getStatus();
             Assert.assertTrue(testRequestType.isValidStatusCode(statusCode),
@@ -203,7 +203,7 @@ public class ClaimAuthRefsTest extends BaseServiceTest<AbstractCommonList> {
             Assert.assertEquals(statusCode, STATUS_CREATED);
             result = extractId(res);
         } finally {
-            res.releaseConnection();
+            res.close();
         }
         
         return result;
@@ -218,13 +218,13 @@ public class ClaimAuthRefsTest extends BaseServiceTest<AbstractCommonList> {
 
         // Submit the request to the service and store the response.
         ClaimClient claimClient = new ClaimClient();
-        ClientResponse<String> res = claimClient.read(knownResourceId);
+        Response res = claimClient.read(knownResourceId);
         ClaimsCommon claimCommon = null;
         // Extract and return the common part of the record.
         try {
             assertStatusCode(res, testName);
             // Extract the common part from the response.
-            PoxPayloadIn input = new PoxPayloadIn(res.getEntity());
+            PoxPayloadIn input = new PoxPayloadIn(res.readEntity(String.class));
             claimCommon = (ClaimsCommon) extractPart(input,
                 claimClient.getCommonPartName(), ClaimsCommon.class);
             Assert.assertNotNull(claimCommon);
@@ -233,7 +233,7 @@ public class ClaimAuthRefsTest extends BaseServiceTest<AbstractCommonList> {
             }
         } finally {
             if (res != null) {
-                res.releaseConnection();
+                res.close();
             }
         }
         // Check a couple of fields
@@ -241,15 +241,15 @@ public class ClaimAuthRefsTest extends BaseServiceTest<AbstractCommonList> {
         Assert.assertEquals(claimCommon.getClaimClaimantGroupList().getClaimClaimantGroup().get(0).getFiledOnBehalfOf(), claimOnBehalfOfRefName);
         
         // Get the auth refs and check them
-        ClientResponse<AuthorityRefList> res2 = claimClient.getAuthorityRefs(knownResourceId);
+        Response res2 = claimClient.getAuthorityRefs(knownResourceId);
         AuthorityRefList list = null;
         try {
             assertStatusCode(res2, testName);
-            list = res2.getEntity();
+            list = res2.readEntity(AuthorityRefList.class);
             Assert.assertNotNull(list);
         } finally {
             if (res2 != null) {
-                res2.releaseConnection();
+                res2.close();
             }
         }
         
@@ -312,7 +312,7 @@ public class ClaimAuthRefsTest extends BaseServiceTest<AbstractCommonList> {
         // Delete Person resource(s) (before PersonAuthority resources).
         for (String resourceId : personIdsCreated) {
             // Note: Any non-success responses are ignored and not reported.
-            personAuthClient.deleteItem(personAuthCSID, resourceId).releaseConnection();
+            personAuthClient.deleteItem(personAuthCSID, resourceId).close();
         }
         // Delete PersonAuthority resource(s).
         // Note: Any non-success response is ignored and not reported.
@@ -323,7 +323,7 @@ public class ClaimAuthRefsTest extends BaseServiceTest<AbstractCommonList> {
         ClaimClient claimClient = new ClaimClient();
         for (String resourceId : claimIdsCreated) {
             // Note: Any non-success responses are ignored and not reported.
-            claimClient.delete(resourceId).releaseConnection();
+            claimClient.delete(resourceId).close();
         }
     }
 

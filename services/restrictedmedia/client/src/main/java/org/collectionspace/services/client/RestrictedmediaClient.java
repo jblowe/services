@@ -59,7 +59,7 @@ public class RestrictedmediaClient extends AbstractCommonListPoxServiceClientImp
      * Creates a new blob resource from the form data and associates it with an existing restrictedmedia resource
      *
      */
-    public ClientResponse<Response> createBlobFromFormData(String csid, // this is the Restrictedmedia resource CSID
+    public Response createBlobFromFormData(String csid, // this is the Restrictedmedia resource CSID
     		MultipartFormDataOutput formDataOutput) {
         return getProxy().createBlobFromFormData(csid, formDataOutput);
     }    
@@ -71,14 +71,14 @@ public class RestrictedmediaClient extends AbstractCommonListPoxServiceClientImp
      * Creates a new blob
      *
      */
-    public ClientResponse<Response> createBlobFromUri(String csid, String blobUri) {
+    public Response createBlobFromUri(String csid, String blobUri) {
         return getProxy().createBlobFromUri(csid, blobUri, blobUri); //send the URI as both a query param and as content
     }
     
     /*
      * Create both a new restrictedmedia record
      */
-    public ClientResponse<Response> createRestrictedmediaAndBlobWithUri(PoxPayloadOut xmlPayload, String blobUri, boolean purgeOriginal) {
+    public Response createRestrictedmediaAndBlobWithUri(PoxPayloadOut xmlPayload, String blobUri, boolean purgeOriginal) {
     	return getProxy().createRestrictedmediaAndBlobWithUri(xmlPayload.getBytes(), blobUri, purgeOriginal);
     }
         
@@ -87,7 +87,7 @@ public class RestrictedmediaClient extends AbstractCommonListPoxServiceClientImp
      * @param restrictedmedia
      * @return
      */
-    public ClientResponse<String> update(String csid, PoxPayloadOut xmlPayload, String URI) {
+    public Response update(String csid, PoxPayloadOut xmlPayload, String URI) {
         return getProxy().update(csid, xmlPayload.getBytes());
 
     }

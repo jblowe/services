@@ -96,8 +96,8 @@ public class RestrictedmediaServiceTest extends AbstractPoxServiceTestImpl<Abstr
     }
 
     @Override
-    protected AbstractCommonList getCommonList(ClientResponse<AbstractCommonList> response) {
-        return response.getEntity(AbstractCommonList.class);
+    protected AbstractCommonList getCommonList(Response response) {
+        return response.readEntity(AbstractCommonList.class);
     }
 
     /**
@@ -116,14 +116,14 @@ public class RestrictedmediaServiceTest extends AbstractPoxServiceTestImpl<Abstr
 		//
 		RestrictedmediaClient client = new RestrictedmediaClient();
 		PoxPayloadOut multipart = createRestrictedmediaInstance(createIdentifier());
-		ClientResponse<Response> restrictedmediaRes = client.create(multipart);
+		Response restrictedmediaRes = client.create(multipart);
 		String restrictedmediaCsid = null;
 		try {
 			assertStatusCode(restrictedmediaRes, testName);
 			restrictedmediaCsid = extractId(restrictedmediaRes);
 		} finally {
 			if (restrictedmediaRes != null) {
-				restrictedmediaRes.releaseConnection();
+				restrictedmediaRes.close();
 			}
 		}
 		//
@@ -154,7 +154,7 @@ public class RestrictedmediaServiceTest extends AbstractPoxServiceTestImpl<Abstr
 				//
 				if (blobFile != null) {
 					client = new RestrictedmediaClient();
-					ClientResponse<Response> res = null;
+					Response res = null;
 					String mimeType = this.getMimeType(blobFile);
 					logger.debug("Processing file URI: " + blobFile.getAbsolutePath());
 					logger.debug("MIME type is: " + mimeType);
@@ -178,7 +178,7 @@ public class RestrictedmediaServiceTest extends AbstractPoxServiceTestImpl<Abstr
 						}
 					} finally {
 						if (res != null) {
-							res.releaseConnection();
+							res.close();
 						}
 					}
 				} else {
@@ -206,7 +206,7 @@ public class RestrictedmediaServiceTest extends AbstractPoxServiceTestImpl<Abstr
     public void createRestrictedmediaAndBlobWithUri(String testName) throws Exception {
 		RestrictedmediaClient client = new RestrictedmediaClient();
 		PoxPayloadOut multipart = createRestrictedmediaInstance(createIdentifier());
-		ClientResponse<Response> restrictedmediaRes = client.createRestrictedmediaAndBlobWithUri(multipart, PUBLIC_URL_DECK, true); // purge the original
+		Response restrictedmediaRes = client.createRestrictedmediaAndBlobWithUri(multipart, PUBLIC_URL_DECK, true); // purge the original
 		String restrictedmediaCsid = null;
 		try {
 			assertStatusCode(restrictedmediaRes, testName);
@@ -214,7 +214,7 @@ public class RestrictedmediaServiceTest extends AbstractPoxServiceTestImpl<Abstr
 //			allResourceIdsCreated.add(restrictedmediaCsid); // Re-enable this and also add code to delete the associated blob
 		} finally {
 			if (restrictedmediaRes != null) {
-				restrictedmediaRes.releaseConnection();
+				restrictedmediaRes.close();
 			}
 		}
     }

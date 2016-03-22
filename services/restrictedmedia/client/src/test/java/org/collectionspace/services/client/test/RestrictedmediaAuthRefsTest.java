@@ -84,7 +84,7 @@ public class RestrictedmediaAuthRefsTest extends BaseServiceTest<AbstractCommonL
     }
 
     @Override
-    protected AbstractCommonList getCommonList(ClientResponse<AbstractCommonList> response) {
+    protected AbstractCommonList getCommonList(Response response) {
         throw new UnsupportedOperationException(); //method not supported (or needed) in this test class
     }
 
@@ -109,7 +109,7 @@ public class RestrictedmediaAuthRefsTest extends BaseServiceTest<AbstractCommonL
         //    references, and will refer to Person resources by their refNames.
         RestrictedmediaClient restrictedmediaClient = new RestrictedmediaClient();
         PoxPayloadOut multipart = createRestrictedmediaInstance(depositorRefName, "restrictedmedia.title-" + identifier);
-        ClientResponse<Response> res = restrictedmediaClient.create(multipart);
+        Response res = restrictedmediaClient.create(multipart);
         try {
 	        assertStatusCode(res, testName);
 	        if (knownResourceId == null) {// Store the ID returned from the first resource created for additional tests below.
@@ -118,7 +118,7 @@ public class RestrictedmediaAuthRefsTest extends BaseServiceTest<AbstractCommonL
 	        restrictedmediaIdsCreated.add(extractId(res));// Store the IDs from every resource created; delete on cleanup
         } finally {
         	if (res != null) {
-                res.releaseConnection();
+                res.close();
             }
         }
     }
@@ -128,13 +128,13 @@ public class RestrictedmediaAuthRefsTest extends BaseServiceTest<AbstractCommonL
         // Create a temporary PersonAuthority resource, and its corresponding refName by which it can be identified.
         PoxPayloadOut multipart = PersonAuthorityClientUtils.createPersonAuthorityInstance(
         		PERSON_AUTHORITY_NAME, PERSON_AUTHORITY_NAME, personAuthClient.getCommonPartName());
-        ClientResponse<Response> res = personAuthClient.create(multipart);
+        Response res = personAuthClient.create(multipart);
         try {
 	        assertStatusCode(res, "createPersonRefs (not a surefire test)");
 	        personAuthCSID = extractId(res);
         } finally {
         	if (res != null) {
-                res.releaseConnection();
+                res.close();
             }
         }
         String authRefName = PersonAuthorityClientUtils.getAuthorityRefName(personAuthCSID, null);
@@ -166,13 +166,13 @@ public class RestrictedmediaAuthRefsTest extends BaseServiceTest<AbstractCommonL
         personTerms.add(term);
         PoxPayloadOut multipart = PersonAuthorityClientUtils.createPersonInstance(
         		personAuthCSID, authRefName, personInfo, personTerms, personAuthClient.getItemCommonPartName());
-        ClientResponse<Response> res = personAuthClient.createItem(personAuthCSID, multipart);
+        Response res = personAuthClient.createItem(personAuthCSID, multipart);
         try {
 	        assertStatusCode(res, "createPerson (not a surefire test)");
 	        result = extractId(res);
         } finally {
         	if (res != null) {
-                res.releaseConnection();
+                res.close();
             }
         }
         
@@ -191,18 +191,18 @@ public class RestrictedmediaAuthRefsTest extends BaseServiceTest<AbstractCommonL
         testSetup(STATUS_OK, ServiceRequestType.READ);
 
         RestrictedmediaClient restrictedmediaClient = new RestrictedmediaClient();
-        ClientResponse<String> res = restrictedmediaClient.read(knownResourceId);
+        Response res = restrictedmediaClient.read(knownResourceId);
         PoxPayloadIn input = null;
         RestrictedmediaCommon restrictedmedia = null;
         try {
 	        assertStatusCode(res, testName);
-	        input = new PoxPayloadIn(res.getEntity());
+	        input = new PoxPayloadIn(res.readEntity(String.class));
 	        restrictedmedia = (RestrictedmediaCommon) extractPart(input, restrictedmediaClient.getCommonPartName(), RestrictedmediaCommon.class);
 	        Assert.assertNotNull(restrictedmedia);
 	        logger.debug(objectAsXmlString(restrictedmedia, RestrictedmediaCommon.class));
         } finally {
         	if (res != null) {
-                res.releaseConnection();
+                res.close();
             }
         }
 
@@ -210,14 +210,14 @@ public class RestrictedmediaAuthRefsTest extends BaseServiceTest<AbstractCommonL
         Assert.assertEquals(restrictedmedia.getTitle(), title);
 
         // Get the auth refs and check them
-        ClientResponse<AuthorityRefList> res2 = restrictedmediaClient.getAuthorityRefs(knownResourceId);
+        Response res2 = restrictedmediaClient.getAuthorityRefs(knownResourceId);
         AuthorityRefList list = null;
         try {
 	        assertStatusCode(res2, testName);
-	        list = res2.getEntity();
+	        list = res2.readEntity(AuthorityRefList.class);
         } finally {
         	if (res2 != null) {
-        		res2.releaseConnection();
+        		res2.close();
             }
         }
         
