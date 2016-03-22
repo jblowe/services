@@ -71,6 +71,7 @@ import org.apache.chemistry.opencmis.commons.enums.CmisVersion;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.server.impl.CallContextImpl;
 import org.apache.chemistry.opencmis.server.shared.ThresholdOutputStreamFactory;
+
 import org.nuxeo.common.utils.IdUtils;
 import org.nuxeo.ecm.core.api.ClientException;
 import org.nuxeo.ecm.core.api.DocumentModel;
@@ -84,6 +85,7 @@ import org.nuxeo.ecm.core.api.PathRef;
 import org.nuxeo.runtime.transaction.TransactionRuntimeException;
 import org.nuxeo.ecm.core.opencmis.bindings.NuxeoCmisServiceFactory;
 import org.nuxeo.ecm.core.opencmis.impl.server.NuxeoCmisService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -210,7 +212,6 @@ public class RepositoryJavaClientImpl implements RepositoryClient<PoxPayloadIn, 
         } catch (BadRequestException bre) {
             throw bre;
         } catch (Exception e) {
-            logger.error("Caught exception ", e);
             throw new NuxeoDocumentException(e);
         } finally {
             if (repoSession != null) {
@@ -461,8 +462,16 @@ public class RepositoryJavaClientImpl implements RepositoryClient<PoxPayloadIn, 
         try {
             repoSession = getRepositorySession(ctx);
             wrapDoc = findDoc(repoSession, ctx, whereClause);
+        } catch (DocumentNotFoundException dnfe) {
+        	throw dnfe;
+        } catch (DocumentException de) {
+        	throw de;
         } catch (Exception e) {
-            throw new NuxeoDocumentException("Unable to create a Nuxeo repository session.", e);
+        	if (repoSession == null) {
+        		throw new NuxeoDocumentException("Unable to create a Nuxeo repository session.", e);
+        	} else {
+        		throw new NuxeoDocumentException("Unexpected Nuxeo exception.", e);
+        	}
         } finally {
             if (repoSession != null) {
                 releaseRepositorySession(ctx, repoSession);
@@ -1377,9 +1386,6 @@ public class RepositoryJavaClientImpl implements RepositoryClient<PoxPayloadIn, 
         } catch (CSWebApplicationException wae) {
             throw wae;
         } catch (Exception e) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Caught exception ", e);
-            }
             throw new NuxeoDocumentException(e);
         } finally {
             if (repoSession != null) {
@@ -1452,6 +1458,26 @@ public class RepositoryJavaClientImpl implements RepositoryClient<PoxPayloadIn, 
         }
     }
 
+    @Override
+	public void deleteWithWhereClause(@SuppressWarnings("rawtypes") ServiceContext ctx, String whereClause, 
+			@SuppressWarnings("rawtypes") DocumentHandler handler) throws 
+			DocumentNotFoundException, DocumentException {
+        if (ctx == null) {
+            throw new IllegalArgumentException(
+                    "delete(ctx, specifier): ctx is missing");
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug("Deleting document with whereClause=" + whereClause);
+        }
+        
+        DocumentWrapper<DocumentModel> foundDocWrapper = this.findDoc(ctx, whereClause);
+        if (foundDocWrapper != null) {
+        	DocumentModel docModel = foundDocWrapper.getWrappedObject();
+        	String csid = docModel.getName();
+        	this.delete(ctx, csid, handler);
+        }
+    }
+    
     /**
      * delete a document from the Nuxeo repository
      *

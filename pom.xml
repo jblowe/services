@@ -5,15 +5,15 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.collectionspace.services</groupId>
 	<artifactId>org.collectionspace.services</artifactId>
-	<version>4.2-SNAPSHOT</version>
+	<version>4.3</version>
 	<packaging>pom</packaging>
 	<name>services</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<cspace.services.version>4.2-SNAPSHOT</cspace.services.version>
-		<cspace.services.client.version>4.2-SNAPSHOT</cspace.services.client.version>
-		<nuxeo.general.release>6.0</nuxeo.general.release>
+		<cspace.services.version>4.3</cspace.services.version>
+		<cspace.services.client.version>4.3</cspace.services.client.version>
+		<nuxeo.general.release>6.0-HF21</nuxeo.general.release>
 		<nuxeo.shell.version>${nuxeo.general.release}</nuxeo.shell.version>
 		<nuxeo.platform.version>${nuxeo.general.release}</nuxeo.platform.version>
 		<nuxeo.core.version>${nuxeo.general.release}</nuxeo.core.version>
@@ -110,6 +110,7 @@
 			</snapshots>
 		</repository>
 
+		<!-- codehaus was shutdown in May 2015
 		<repository>
 			<id>codehaus repo</id>
 			<name>codehaus repo</name>
@@ -118,6 +119,7 @@
 				<enabled>false</enabled>
 			</snapshots>
 		</repository>
+		-->
 
 		<repository>
 			<id>nuxeo-public</id>
@@ -214,6 +216,7 @@
 				<enabled>false</enabled>
 			</snapshots>
 		</pluginRepository>
+		<!-- Codehaus repo was shutdown in May 2015
 		<pluginRepository>
 			<id>Codehaus Repository</id>
 			<url>http://repository.codehaus.org/</url>
@@ -224,6 +227,7 @@
 				<enabled>false</enabled>
 			</snapshots>
 		</pluginRepository>
+		-->
 	</pluginRepositories>
 
 	<build>
@@ -332,6 +336,7 @@
 				before we perform any build related tasks. -->
 			<plugin>
 				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.7</version>
 				<executions>
 					<execution>
 						<id>check-environment-vars</id>
@@ -341,8 +346,11 @@
 						</goals>
 						<configuration>
 							<tasks>
+								<property environment="env" />
 								<fail unless="env.CSPACE_INSTANCE_ID"
 									message="Required environment variable CSPACE_INSTANCE_ID has not been set. Use '_default' as a default value." />
+								<fail unless="env.JEE_PORT"
+									message="Required environment variable JEE_PORT has not been set.  Use '8180' as a default value." />
 								<fail unless="env.DB_HOST"
 									message="Required environment variable DB_HOST has not been set.  Use 'localhost' as a default value." />
 								<fail unless="env.DB_PORT"

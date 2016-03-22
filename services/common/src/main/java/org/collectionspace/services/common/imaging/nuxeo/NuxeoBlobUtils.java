@@ -66,7 +66,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.commons.io.IOUtils;
 import org.collectionspace.services.client.PoxPayloadIn;
 import org.collectionspace.services.client.PoxPayloadOut;
-import org.collectionspace.services.common.FileUtils;
+import org.collectionspace.services.common.FileUtilities;
 import org.collectionspace.services.common.ServiceMain;
 import org.collectionspace.services.common.blob.BlobInput;
 import org.collectionspace.services.common.context.ServiceContext;
@@ -429,7 +429,7 @@ public class NuxeoBlobUtils {
 			Blob nuxeoBlob, Boolean getContentFlag) {
 		BlobsCommon result = new BlobsCommon();
 
-		if (documentModel != null) {
+		if (documentModel != null && nuxeoBlob != null) {
 			result.setMimeType(nuxeoBlob.getMimeType());
 			result.setName(nuxeoBlob.getFilename());
 			result.setLength(Long.toString(nuxeoBlob.getLength()));
@@ -699,7 +699,7 @@ public class NuxeoBlobUtils {
 			//
 			String sanitizedName = NuxeoBlobUtils.getSanizitedFilename(originalFile);
 			if (sanitizedName.equals(originalFile.getName()) == false) {
-				targetFile = FileUtils.createTmpFile(originalFile, sanitizedName);
+				targetFile = FileUtilities.createTmpFile(originalFile, sanitizedName);
 				if (logger.isDebugEnabled() == true) {
 					logger.debug(String.format("The file '%s''s name has characters that Nuxeo can't deal with.  Rather than renaming the file, we created a new temp file at '%s'",
 							originalFile.getName(), targetFile.getAbsolutePath()));
@@ -910,26 +910,28 @@ public class NuxeoBlobUtils {
 	static private InputStream getInputStream(BlobsCommon blobsCommon, Blob blob) {
 		InputStream result = null;
 		
-		try {
-			InputStream blobStream = blob.getStream(); // By default, the result will be whatever stream Nuxeo returns to us.
-			int blobSize = blobsCommon.getLength() != null ? Integer.parseInt(blobsCommon.getLength()) : 0;
-			if (blobSize > 0 && blobSize < MAX_IMAGE_BUFFER) {
-				byte[] bytes = IOUtils.toByteArray(blobStream);
-				blobStream.close(); // Close the InputStream that we got from Nuxeo since it's usually a FileInputStream -we definitely want FileInputStreams closed.
-				result = new ByteArrayInputStream(bytes);
-			} else {
-				result = blobStream; // The blob is too large to put into a ByteArrayStream.
-			}
-		} catch (Exception e) {
-			logger.error(String.format("Error getting the InputStream content for file %s.", blobsCommon.getName()), e);
-			if (result != null) {
-				try {
-					result.close();
-					result = null;
-				} catch (Exception x) {
-					logger.debug(String.format("Exception encountered during InputStream cleanup of file %s", blobsCommon.getName()), x);
+		if (blob != null) {
+			try {
+				InputStream blobStream = blob.getStream(); // By default, the result will be whatever stream Nuxeo returns to us.
+				int blobSize = blobsCommon.getLength() != null ? Integer.parseInt(blobsCommon.getLength()) : 0;
+				if (blobSize > 0 && blobSize < MAX_IMAGE_BUFFER) {
+					byte[] bytes = IOUtils.toByteArray(blobStream);
+					blobStream.close(); // Close the InputStream that we got from Nuxeo since it's usually a FileInputStream -we definitely want FileInputStreams closed.
+					result = new ByteArrayInputStream(bytes);
+				} else {
+					result = blobStream; // The blob is too large to put into a ByteArrayStream.
 				}
-			}			
+			} catch (Exception e) {
+				logger.error(String.format("Error getting the InputStream content for file %s.", blobsCommon.getName()), e);
+				if (result != null) {
+					try {
+						result.close();
+						result = null;
+					} catch (Exception x) {
+						logger.debug(String.format("Exception encountered during InputStream cleanup of file %s", blobsCommon.getName()), x);
+					}
+				}			
+			}
 		}
 		
 		return result;
@@ -980,8 +982,16 @@ public class NuxeoBlobUtils {
 					}
 				} else {
 					docBlob = docBlobHolder.getBlob();
-					if (derivativeTerm != null) { // If its a derivative request on a non-image blob, then return just a document image thumnail
+					if (derivativeTerm != null) { // If its a derivative request on a non-image blob, then return just a document image thumbnail
 						isNonImageDerivative = true;
+					}
+				}
+				
+				if (logger.isWarnEnabled()) {
+					if (docBlob == null) {
+						String msg = String.format("Could not retrieve document blob for Nuxeo document ID = '%s' CSID = '%s'",
+								repositoryId, NuxeoUtils.getCsid(documentModel));
+						logger.warn(msg);
 					}
 				}
 
@@ -997,7 +1007,7 @@ public class NuxeoBlobUtils {
 					if (isNonImageDerivative == false) {
 						//remoteStream = docBlob.getStream();
 						remoteStream = getInputStream(blobsCommon, docBlob); // CSPACE-6110 - For small files, return a byte array instead of a file stream
-					} else {
+					} else { // If its a derivative request on a non-image blob, then return just a document image thumbnail
 						String docBlobMimetype = docBlob.getMimeType();
 						switch(docBlobMimetype) {
 							case MIME_CSV:

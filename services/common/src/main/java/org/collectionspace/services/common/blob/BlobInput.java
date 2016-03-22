@@ -175,16 +175,26 @@ public class BlobInput {
 	// are we also receiving the blobUri?
 	//
 	public void createBlobFile(HttpServletRequest req, String blobUri) throws Exception {
-    	File tmpFile = org.collectionspace.services.common.FileUtils.createTmpFile(req);
+    	File tmpFile = org.collectionspace.services.common.FileUtilities.createTmpFile(req);
     	this.setBlobFile(tmpFile);
     	this.setBlobUri(blobUri);
+	}
+	
+	private boolean isProtocolHttp(URL url) {
+		boolean result = false;
+		
+		if (url.getProtocol().equalsIgnoreCase("http") ||
+				url.getProtocol().equalsIgnoreCase("https")) {
+			result = true;
+		}
+		
+		return result;
 	}
 	
 	public void createBlobFile(String theBlobUri) throws MalformedURLException, Exception {
 		URL blobUrl = new URL(theBlobUri);
     	File theBlobFile = null;
-
-		if (blobUrl.getProtocol().equalsIgnoreCase("http")) { //REM: Add support for https as well
+		if (isProtocolHttp(blobUrl) == true) {
 			Download fetchedFile = new Download(blobUrl);
 			if (logger.isDebugEnabled() == true) {
 				logger.debug("Starting blob download into temp file:" + fetchedFile.getFilePath());

@@ -479,17 +479,20 @@ public class CollectionObjectServiceTest extends AbstractPoxServiceTestImpl<Abst
         CollectionObjectClient client = new CollectionObjectClient();
         PoxPayloadOut multipart =
                 createCollectionObjectInstance(client.getCommonPartName(), collectionObject, null);
-        ClientResponse<Response> res = client.create(multipart);
-        int statusCode = res.getStatus();
-
-        // Read the response and verify that the create attempt failed.
-        if (logger.isDebugEnabled()) {
-            logger.debug(testName + ": status = " + statusCode);
+        Response res = client.create(multipart);
+        try {
+	        int statusCode = res.getStatus();
+	        // Read the response and verify that the create attempt failed.
+	        if (logger.isDebugEnabled()) {
+	            logger.debug(testName + ": status = " + statusCode);
+	        }
+	        Assert.assertTrue(testRequestType.isValidStatusCode(statusCode),
+	                invalidStatusCodeMessage(testRequestType, statusCode));
+	        Assert.assertEquals(statusCode, Response.Status.BAD_REQUEST.getStatusCode());
+        } finally {
+        	res.close();
         }
-        Assert.assertTrue(testRequestType.isValidStatusCode(statusCode),
-                invalidStatusCodeMessage(testRequestType, statusCode));
-        Assert.assertEquals(statusCode, Response.Status.BAD_REQUEST.getStatusCode());
-
+        
         // FIXME: Consider splitting off the following into its own test method.
         
         // Build a payload with invalid content, by setting a value to the
@@ -507,18 +510,21 @@ public class CollectionObjectServiceTest extends AbstractPoxServiceTestImpl<Abst
         collectionObject.setObjectNameList(objNameList);
 
         // Submit the request to the service and store the response.
-        multipart =
-            createCollectionObjectInstance(client.getCommonPartName(), collectionObject, null);
+        multipart = createCollectionObjectInstance(client.getCommonPartName(), collectionObject, null);
         res = client.create(multipart);
-        statusCode = res.getStatus();
-
-        // Read the response and verify that the create attempt failed.
-        if (logger.isDebugEnabled()) {
-            logger.debug(testName + ": status = " + statusCode);
+        try {
+	        int statusCode = res.getStatus();
+	
+	        // Read the response and verify that the create attempt failed.
+	        if (logger.isDebugEnabled()) {
+	            logger.debug(testName + ": status = " + statusCode);
+	        }
+	        Assert.assertTrue(testRequestType.isValidStatusCode(statusCode),
+	                invalidStatusCodeMessage(testRequestType, statusCode));
+	        Assert.assertEquals(statusCode, Response.Status.BAD_REQUEST.getStatusCode());
+        } finally {
+        	res.close();
         }
-        Assert.assertTrue(testRequestType.isValidStatusCode(statusCode),
-                invalidStatusCodeMessage(testRequestType, statusCode));
-        Assert.assertEquals(statusCode, Response.Status.BAD_REQUEST.getStatusCode());
     }
     
     /**
@@ -528,10 +534,10 @@ public class CollectionObjectServiceTest extends AbstractPoxServiceTestImpl<Abst
      * @param id the id
      * @return the client response
      */
-    private ClientResponse<String> updateRetrieve(String testName, String id) {
+    private Response updateRetrieve(String testName, String id) {
         setupRead();
         CollectionObjectClient client = new CollectionObjectClient();
-        ClientResponse<String> res = client.read(knownResourceId);
+        Response res = client.read(knownResourceId);
         int statusCode = res.getStatus();
         // Check the status code of the response: does it match
         // the expected response(s)?
@@ -544,6 +550,7 @@ public class CollectionObjectServiceTest extends AbstractPoxServiceTestImpl<Abst
         if(logger.isDebugEnabled()){
             logger.debug("got object to update with ID: " + knownResourceId);
         }
+        
         return res;
     }
 
@@ -554,14 +561,15 @@ public class CollectionObjectServiceTest extends AbstractPoxServiceTestImpl<Abst
      * @param id the id
      * @return the client response
      */
-    private ClientResponse<String> updateSend(String testName, String id,
+    private Response updateSend(String testName, String id,
             CollectionobjectsCommon collectionObjectCommon) {
         setupUpdate();
         PoxPayloadOut output = new PoxPayloadOut(CollectionObjectClient.SERVICE_PAYLOAD_NAME);
         PayloadOutputPart commonPart = output.addPart(collectionObjectCommon, MediaType.APPLICATION_XML_TYPE);
         CollectionObjectClient client = new CollectionObjectClient();
         commonPart.setLabel(client.getCommonPartName());
-        ClientResponse<String> res = client.update(knownResourceId, output);
+        
+        Response res = client.update(knownResourceId, output);
         int statusCode = res.getStatus();
         // Check the status code of the response: does it match
         // the expected response(s)?
@@ -571,7 +579,8 @@ public class CollectionObjectServiceTest extends AbstractPoxServiceTestImpl<Abst
         Assert.assertTrue(testRequestType.isValidStatusCode(statusCode),
                 invalidStatusCodeMessage(testRequestType, statusCode));
         Assert.assertEquals(statusCode, testExpectedStatusCode);
-        return res;
+        
+        return res; // Calling needs to make sure they call res.close();
     }
 
     // Failure outcomes
@@ -713,17 +722,20 @@ public class CollectionObjectServiceTest extends AbstractPoxServiceTestImpl<Abst
         CollectionObjectClient client = new CollectionObjectClient();
         PoxPayloadOut multipart =
                 createInstance(client.getCommonPartName(), NON_EXISTENT_ID);
-        ClientResponse<String> res = client.update(NON_EXISTENT_ID, multipart);
-        int statusCode = res.getStatus();
-
-        // Check the status code of the response: does it match
-        // the expected response(s)?
-        if (logger.isDebugEnabled()) {
-            logger.debug(testName + ": status = " + statusCode);
+        Response res = client.update(NON_EXISTENT_ID, multipart);
+        try {
+	        int statusCode = res.getStatus();
+	        // Check the status code of the response: does it match
+	        // the expected response(s)?
+	        if (logger.isDebugEnabled()) {
+	            logger.debug(testName + ": status = " + statusCode);
+	        }
+	        Assert.assertTrue(testRequestType.isValidStatusCode(statusCode),
+	                invalidStatusCodeMessage(testRequestType, statusCode));
+	        Assert.assertEquals(statusCode, testExpectedStatusCode);
+        } finally {
+        	res.close();
         }
-        Assert.assertTrue(testRequestType.isValidStatusCode(statusCode),
-                invalidStatusCodeMessage(testRequestType, statusCode));
-        Assert.assertEquals(statusCode, testExpectedStatusCode);
     }
 
    /**
@@ -740,17 +752,16 @@ public class CollectionObjectServiceTest extends AbstractPoxServiceTestImpl<Abst
     *     a base class.
     * @throws Exception 
     */
-    @Test(dataProvider = "testName",
-    		dependsOnMethods = {"CRUDTests"})
+    // @Test(dataProvider = "testName", dependsOnMethods = {"CRUDTests"}) // REM - Disabled this test because of issues raised in CSPACE-6705
     public void updateWithRequiredValuesNullOrEmpty(String testName) throws Exception {
         // Read an existing record for updating.
-        ClientResponse<String> res = updateRetrieve(testName, knownResourceId);
+        Response res = updateRetrieve(testName, knownResourceId);
         CollectionobjectsCommon collectionObjectCommon = null;
         try {
 	        // Extract its common part.
 	        collectionObjectCommon = extractCommonPartValue(res);
         } finally {
-        	res.releaseConnection();
+        	res.close();
         }
 
         // Update the common part with invalid content, by setting a value to
@@ -778,7 +789,7 @@ public class CollectionObjectServiceTest extends AbstractPoxServiceTestImpl<Abst
 	                invalidStatusCodeMessage(testRequestType, statusCode));
 	        Assert.assertEquals(statusCode, Response.Status.BAD_REQUEST.getStatusCode());
         } finally {
-        	res.releaseConnection();
+        	res.close();
         }
     }
 
@@ -816,7 +827,7 @@ public class CollectionObjectServiceTest extends AbstractPoxServiceTestImpl<Abst
 
         // Submit the request to the service and store the response.
         CollectionObjectClient client = new CollectionObjectClient();
-        ClientResponse<Response> res = client.delete(NON_EXISTENT_ID);
+        Response res = client.delete(NON_EXISTENT_ID);
         try {
 	        int statusCode = res.getStatus();
 	
@@ -829,7 +840,7 @@ public class CollectionObjectServiceTest extends AbstractPoxServiceTestImpl<Abst
 	                invalidStatusCodeMessage(testRequestType, statusCode));
 	        Assert.assertEquals(statusCode, testExpectedStatusCode);
         } finally {
-        	res.releaseConnection();
+        	res.close();
         }
     }
 
@@ -847,8 +858,8 @@ public class CollectionObjectServiceTest extends AbstractPoxServiceTestImpl<Abst
     // Utility methods used by tests above
     // ---------------------------------------------------------------
         
-    private ClientResponse<Response> newCollectionObject() {
-    	ClientResponse<Response> result = null;
+    private Response newCollectionObject() {
+    	Response result = null;
     	
         CollectionObjectClient client = new CollectionObjectClient();
         String identifier = createIdentifier();
@@ -862,13 +873,13 @@ public class CollectionObjectServiceTest extends AbstractPoxServiceTestImpl<Abst
     private String newCollectionObject(boolean assertStatus) {
     	String result = null;
     	
-    	ClientResponse<Response> res = newCollectionObject();
+    	Response res = newCollectionObject();
     	try {
 	        int statusCode = res.getStatus();
 	        Assert.assertEquals(statusCode, STATUS_CREATED);
 	        result = extractId(res);
     	} finally {
-    		res.releaseConnection();
+    		res.close();
     	}
 
     	return result;
@@ -1098,7 +1109,6 @@ public class CollectionObjectServiceTest extends AbstractPoxServiceTestImpl<Abst
      * @throws Exception the exception
      */
     private String createFromXmlFile(String testName, String fileName, boolean useJaxb) throws Exception {
-  
         // Perform setup.
         setupCreate();
 
@@ -1112,17 +1122,23 @@ public class CollectionObjectServiceTest extends AbstractPoxServiceTestImpl<Abst
             multipart = createCollectionObjectInstanceFromRawXml(testName,
                     client.getCommonPartName(), fileName);
         }
-        ClientResponse<Response> res = client.create(multipart);
-        int statusCode = res.getStatus();
-
-        if (logger.isDebugEnabled()) {
-            logger.debug(testName + ": status = " + statusCode);
+        
+        Response res = client.create(multipart);
+        String newId = null;
+        try {
+	        int statusCode = res.getStatus();
+	        if (logger.isDebugEnabled()) {
+	            logger.debug(testName + ": status = " + statusCode);
+	        }
+	        Assert.assertTrue(testRequestType.isValidStatusCode(statusCode),
+	                invalidStatusCodeMessage(testRequestType, statusCode));
+	        Assert.assertEquals(statusCode, testExpectedStatusCode);
+	        newId = extractId(res);
+	        allResourceIdsCreated.add(newId);
+        } finally {
+        	res.close();
         }
-        Assert.assertTrue(testRequestType.isValidStatusCode(statusCode),
-                invalidStatusCodeMessage(testRequestType, statusCode));
-        Assert.assertEquals(statusCode, testExpectedStatusCode);
-        String newId = extractId(res);
-        allResourceIdsCreated.add(newId);
+        
         return newId;
     }
 
@@ -1138,21 +1154,26 @@ public class CollectionObjectServiceTest extends AbstractPoxServiceTestImpl<Abst
 
         // Submit the request to the service and store the response.
         CollectionObjectClient client = new CollectionObjectClient();
-        ClientResponse<String> res = client.read(csid);
-        int statusCode = res.getStatus();
-
-        // Check the status code of the response: does it match
-        // the expected response(s)?
-        if (logger.isDebugEnabled()) {
-            logger.debug(testName + ": status = " + statusCode);
+        Response res = client.read(csid);
+        CollectionobjectsCommon collectionObject = null;
+        try {
+	        int statusCode = res.getStatus();
+	
+	        // Check the status code of the response: does it match
+	        // the expected response(s)?
+	        if (logger.isDebugEnabled()) {
+	            logger.debug(testName + ": status = " + statusCode);
+	        }
+	        Assert.assertTrue(testRequestType.isValidStatusCode(statusCode),
+	                invalidStatusCodeMessage(testRequestType, statusCode));
+	        Assert.assertEquals(statusCode, testExpectedStatusCode);
+	
+	        // Extract the common part.
+	        collectionObject = extractCommonPartValue(res);
+	        Assert.assertNotNull(collectionObject);
+        } finally {
+        	res.close();
         }
-        Assert.assertTrue(testRequestType.isValidStatusCode(statusCode),
-                invalidStatusCodeMessage(testRequestType, statusCode));
-        Assert.assertEquals(statusCode, testExpectedStatusCode);
-
-        // Extract the common part.
-        CollectionobjectsCommon collectionObject = extractCommonPartValue(res);
-        Assert.assertNotNull(collectionObject);
 
         return collectionObject;
      }

@@ -3,7 +3,7 @@
     <parent>
         <groupId>org.collectionspace.services</groupId>
         <artifactId>org.collectionspace.services.main</artifactId>
-        <version>4.2-SNAPSHOT</version>
+        <version>4.3</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -49,6 +49,20 @@
             <artifactId>commons-io</artifactId>
         </dependency>
         <dependency>
+            <groupId>commons-httpclient</groupId>
+            <artifactId>commons-httpclient</artifactId>
+        </dependency>
+        <dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.3.3</version>
+        </dependency>
+        <dependency>
+			<groupId>xerces</groupId>
+			<artifactId>xercesImpl</artifactId>
+			<version>2.9.1</version>
+  		</dependency>        
+        <dependency>
             <groupId>org.jboss.resteasy</groupId>
             <artifactId>resteasy-jaxrs</artifactId>
             <exclusions>
@@ -88,7 +102,7 @@
         <dependency>
 		    <groupId>com.sun.xml.bind</groupId>
 		    <artifactId>jaxb-impl</artifactId>
-		    <version>2.2.2</version>
+		    <version>2.2.7</version>
 		    <type>jar</type>
 		    <scope>compile</scope>
 		</dependency>        
