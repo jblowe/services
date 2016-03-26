@@ -486,7 +486,8 @@ public abstract class DocumentModelHandler<T, TL>
 	    	String matchObjDocTypes = (String)queryParams.getFirst(IQueryManager.SEARCH_RELATED_MATCH_OBJ_DOCTYPES);
 	    	String selectDocType = (String)queryParams.getFirst(IQueryManager.SELECT_DOC_TYPE_FIELD);
 
-	    	String docType = this.getServiceContext().getDocumentType();
+	    	//String docType = this.getServiceContext().getDocumentType();
+            String docType = this.getServiceContext().getTenantQualifiedDoctype();
 	    	if (selectDocType != null && !selectDocType.isEmpty()) {
 	    		docType = selectDocType;
 	    	}
