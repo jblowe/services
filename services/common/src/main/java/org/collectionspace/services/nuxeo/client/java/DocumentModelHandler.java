@@ -486,8 +486,23 @@ public abstract class DocumentModelHandler<T, TL>
 	    	String matchObjDocTypes = (String)queryParams.getFirst(IQueryManager.SEARCH_RELATED_MATCH_OBJ_DOCTYPES);
 	    	String selectDocType = (String)queryParams.getFirst(IQueryManager.SELECT_DOC_TYPE_FIELD);
 
-	    	//String docType = this.getServiceContext().getDocumentType();
-            String docType = this.getServiceContext().getTenantQualifiedDoctype();
+	    	String docType = this.getServiceContext().getDocumentType();
+            //String docType2 = this.getServiceContext().getTenantQualifiedDoctype();
+
+            //logger.debug("docType                = " + docType);
+            //logger.debug("docType2               = " + docType2);
+            //logger.debug("selectDocType          = " + selectDocType);
+
+            try {
+                String docTypeTenantQualified = NuxeoUtils.getTenantQualifiedDocType(this.getServiceContext().getTenantId(), docType);
+                //logger.debug("docTypeTenantQualified = " + docTypeTenantQualified);
+                //logger.debug("changing " + docType + " to " + docTypeTenantQualified);
+                docType = docTypeTenantQualified;
+            } catch (Exception e) {
+                logger.error("got error", e);
+            }
+
+
 	    	if (selectDocType != null && !selectDocType.isEmpty()) {
 	    		docType = selectDocType;
 	    	}
@@ -550,6 +565,8 @@ public abstract class DocumentModelHandler<T, TL>
 	    	
 	        try {
 				NuxeoUtils.appendCMISOrderBy(query, queryContext);
+                String foo = queryContext.getOrderByClause();
+                logger.debug("orderBy clause: " + foo);
 			} catch (Exception e) {
 				logger.error("Could not append ORDER BY clause to CMIS query", e);
 			}
